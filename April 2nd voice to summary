@@ -1,0 +1,40 @@
+import os
+from google.cloud import speech_v1p1beta1 as speech
+from gensim.summarization import summarize
+
+# set up the speech-to-text client
+client = speech.SpeechClient()
+
+# prompt user for audio file path
+audio_file = input("Enter path to audio file: ")
+
+# open audio file and read contents
+with open(audio_file, "rb") as audio_file:
+    audio_content = audio_file.read()
+
+# configure audio settings
+audio = speech.types.RecognitionAudio(content=audio_content)
+config = speech.types.RecognitionConfig(
+    encoding=speech.enums.RecognitionConfig.AudioEncoding.LINEAR16,
+    sample_rate_hertz=16000,
+    language_code="en-US",
+)
+
+# perform speech-to-text conversion
+response = client.recognize(config=config, audio=audio)
+
+# extract transcript from response
+transcript = ""
+for result in response.results:
+    transcript += result.alternatives[0].transcript
+
+# print transcript
+print("\nTranscript:\n")
+print(transcript)
+
+# summarize transcript
+summary = summarize(transcript, ratio=0.2)
+
+# print summary
+print("\nSummary:\n")
+print(summary)
